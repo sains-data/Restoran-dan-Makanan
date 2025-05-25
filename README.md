@@ -13,10 +13,30 @@ Proyek ini bertujuan untuk melakukan perancangan dan implementasi Data Warehouse
 3. Implementasi tabel fakta dan dimensi untuk mendukung analisis penjualan, inventaris, dan tren waktu.
 4. Pengoptimalan kinerja data warehouse melalui desain indeks dan strategi partisi data.
 
-## 4. Metodologi 
-Metodologi yang digunakan dalam proyek ini adalah pendekatan Business-Driven. Pendekatan ini menekankan pada identifikasi kebutuhan bisnis terlebih dahulu, yang kemudian menjadi dasar untuk perancangan dan implementasi data warehouse. Metodologi ini melibatkan beberapa tahapan utama, mulai dari spesifikasi kebutuhan, perancangan skema konseptual, hingga implementasi dan evaluasi data warehouse.
+## 4. Ruang Lingkup Sistem
+Sistem ini memiliki ruang lingkup yang mencakup integrasi data penjualan restoran pizza dari berbagai sumber operasional ke dalam sebuah data warehouse yang terstruktur menggunakan skema bintang.  Proses ETL akan digunakan untuk mengekstrak, mentransformasi, dan memuat data ke dalam tabel fakta dan dimensi.  Data warehouse ini akan mendukung analisis penjualan yang mendalam, seperti identifikasi pizza terlaris dan tren penjualan, serta membantu optimasi operasional restoran, terutama dalam pengelolaan stok bahan baku.  Selain itu, sistem akan dioptimalkan untuk performa kueri yang efisien.
 
-## 5. Analisis Kebutuhan
+## 5. Metodologi 
+Metodologi yang digunakan dalam proyek data warehouse untuk restoran pizza ini mengikuti pendekatan terstruktur dengan penekanan pada kebutuhan bisnis (business-driven). Secara umum, tahapan pengembangan ini dapat dianalogikan dengan model Waterfall, di mana setiap tahapan memiliki keluaran yang menjadi masukan untuk tahapan berikutnya. Metodologi ini melibatkan beberapa tahapan utama, mulai dari spesifikasi kebutuhan, perancangan skema konseptual, hingga implementasi dan evaluasi data warehouse.
+1. Model Waterfall dari Tahapan Misi 1-4
+   * Misi 1 : Spesifikasi Kebutuhan
+
+     Fokusnya adalah memahami kebutuhan bisnis restoran pizza terkait analisis data. Kegiatan utama meliputi; Identifikasi pengguna (departemen dan peran) dan kebutuhan informasi mereka, definisi kebutuhan bisnis dalam bentuk pertanyaan analitis, penentuan fakta dan dimensi yang relevan untuk menjawab pertanyaan tersebut, dan identifikasi sumber data (file pizza_sales.csv) dan strukturnya.
+   * Misi 2: Desain Konseptual
+
+     Fokusnya adalah merancang skema data warehouse secara konseptual. Kegiatan utama; Pemodelan skema bintang (Star Schema), definisi tabel fakta dan dimensi beserta atributnya, justifikasi desain berdasarkan kebutuhan bisnis yang telah diidentifikasi, dan pemetaan antara sumber data dan elemen skema bintang.
+   * Misi 3: Desain Logikal dan Fisikal
+
+     Fokusnya adalah menerjemahkan desain konseptual menjadi implementasi fisik dalam DBMS. Kegiatan utama; Desain logikal tabel dimensi dan fakta, termasuk penentuan tipe data dan key constraints, implementasi tabel-tabel tersebut dalam DBMS (contoh kode SQL), proses ETL (Extract, Transform, Load) dari sumber data ke tabel data warehouse (contoh kode Python), desain dan implementasi index untuk optimasi query, dan pertimbangan desain fisikal (partisi tabel, view).
+   * Misi 4: Implementasi, Reporting, dan Produksi
+
+     Fokusnya adalah implementasi skema data warehouse di SQL Server, proses ETL, dan query analitik.
+3. Tools yang Digunakan
+   * DBMS (Database Management System): SQL Server
+   * ETL: Script SQL
+   * Visualisasi: Power BI atau Tableau
+
+## 6. Analisis Kebutuhan
 Analisis Kebutuhan adalah fondasi dari seluruh proyek data warehouse. Di sinilah kita mengidentifikasi dengan jelas apa yang diinginkan dan dibutuhkan dari sistem data warehouse. Pendekatan yang digunakan adalah Business-Driven, yang berarti kebutuhan bisnis menjadi fokus utama.
 1. Identifikasi Pengguna
 
@@ -36,9 +56,51 @@ Analisis Kebutuhan adalah fondasi dari seluruh proyek data warehouse. Di sinilah
 
    Langkah terakhir dalam analisis kebutuhan adalah memetakan metrik analitik dengan kolom-kolom yang tersedia dalam data sumber file pizza_sales.csv dan memastikan bahwa semua data yang dibutuhkan untuk menjawab pertanyaan bisnis tersedia dan dapat diakses.
 
-## 6. Desain konseptual, logikal, dan fisikal
+## 7. Desain konseptual
+1. Model Skema: Menggunakan Star Schema. Star schema terdiri dari satu tabel fakta sentral yang berfungsi sebagai pusat gravitasi untuk semua data transaksional, serta serangkaian tabel dimensi yang mengelilinginya, yang masing-masing menyediakan konteks deskriptif.
+2. Tabel Fakta Utama: `Fact_Penjualan`
+   * Metrik yang dicatat dalam tabel ini adalah `quantity`, yang merepresentasikan jumlah pizza yang terjual dalam setiap transaksi. 
+   * Foreign Keys: `pizza_name_id` , `pizza_size` , `order_date` , `pizza_ingredients`.
+4. Tabel Dimensi:
+   * `Dim_Pizza` : menyimpan nama pizza, dimensi ini mencakup berbagai atribut relevan seperti `pizza_name_id`, `pizza_name`, dan `pizza_category`.
+   * `Dim_UkuranPizza` : Menyimpan atribut ukuran pizza (`pizza_size`, `size_category`).
+   * `Dim_Waktu` : Menyimpan atribut waktu (`order_date`, `bulan`, `tahun`, `hari`).
+   * `Dim_BahanBaku` : Menyimpan atribut bahan baku pizza (`pizza_ingredients`, `stok_tersedia`).
+6. Granularitas Data: Data dalam data warehouse ini dirancang untuk disimpan pada tingkat granularitas yang sangat tinggi, di mana setiap catatan dalam tabel fakta merepresentasikan satu transaksi penjualan pizza individual.
+7. Hubungan Antar Tabel: Relasi one-to-many dari setiap tabel dimensi ke tabel fakta `Fact_Penjualan`
+8. Justifikasi Desain: Desain ini berorientasi pada kebutuhan bisnis (business-driven), mempermudah analisis penjualan, tren, dan stok bahan baku.
 
-## Kelompok 17 RB :
+## 8. Desain Logikal
+Desain logikal adalah tahapan penting dalam pengembangan data warehouse yang menjembatani antara model konseptual dan implementasi fisik dalam sistem database. Desain logikal ini melibatkan penerjemahan skema bintang konseptual menjadi tabel-tabel relasional dengan tipe data, primary key, dan foreign key yang spesifik.
+1. Tabel Dimensi
+   * `Dim_Pizza` (`pizza_name_id` VARCHAR(20) PRIMARY KEY, `pizza_name` VARCHAR(100), `pizza_category` VARCHAR(50))
+   * `Dim_Waktu` (`order_date` DATE PRIMARY KEY, `hari` VARCHAR(10), `bulan` TINYINT, `tahun` SMALLINT)
+   * `Dim_Ukuran` (`pizza_size` VARCHAR(10) PRIMARY KEY, `size_category` VARCHAR(50))
+   * `Dim_BahanBaku` (`pizza_ingredients` VARCHAR(255) PRIMARY KEY, `stok_tersedia` INT) 
+3. Tabel Fakta
+
+   `Fact_Penjualan` (`order_id` INT PRIMARY KEY, `pizza_name_id` VARCHAR(20), `pizza_size` VARCHAR(10), `pizza_category` VARCHAR(50), `order_date` DATE, `pizza_ingredients` VARCHAR(255), `quantity` INT)
+
+## 9. Desain Fisikal
+Desain fisikal adalah tahap akhir dalam perancangan data warehouse, di mana desain logikal diimplementasikan ke dalam sistem manajemen basis data (DBMS) tertentu. Fokus utamanya adalah pada implementasi efisien dan optimalisasi kinerja untuk mendukung analisis data yang cepat dan akurat.
+1. Strategi Indexing: Mempercepat Akses Data
+   * Penerapan Indeks pada Foreign Key: Indeks ditempatkan pada kolom-kolom foreign key di tabel `Fact_Penjualan`.  Ini penting karena foreign key digunakan untuk menghubungkan tabel fakta dengan tabel dimensi. Dengan mengindeks kolom-kolom ini, query yang melibatkan operasi join (penggabungan tabel) dapat dieksekusi dengan jauh lebih cepat.
+   * Indeks pada Kolom Dimensi untuk Query Analitis: Indeks diterapkan pada kolom-kolom dalam tabel dimensi yang sering digunakan dalam klausa WHERE (untuk memfilter data), JOIN (untuk menggabungkan data), dan GROUP BY (untuk mengelompokkan data). Contohnya, pada tabel `Dim_Waktu`, kolom `bulan` dan `tahun` adalah kandidat yang baik untuk diindeks karena analisis sering kali melibatkan pengelompokan penjualan berdasarkan periode waktu tersebut.
+   * Implementasi dalam SQL:
+2. Partisi Tabel dan View: Manajemen Data dan Penyederhanaan Query
+   * Partisi Tabel Fakta: Partisi pada tabel `Fact_Penjualan` berdasarkan kolom `order_date` (dari `Dim_Waktu`) untuk meningkatkan efisiensi penjualan dalam periode waktu tertentu, sehingga mempercepat waktu eksekusi.
+   * View untuk Penyederhanaan Query: View digunakan untuk menyederhanakan query SQL yang kompleks dan menyajikan data dalam bentuk agregat yang lebih mudah dipahami. Contohnya, dapat dibuat sebuah view `vw_penjualan_kategori_tahunan` yang digunakan untuk melihat tren penjualan masing-masing kategori produk dari tahun ke tahun.
+
+## 10. Proses implementasi
+
+## 11. Hasil implementasi
+
+## 12. Evaluasi
+
+## 13. Rencana pengembangan ke depan
+
+## 14. Tim Proyek 
+**Kelompok 17 RB :**
 - Azizah Kusumah Putri        - 122450068
 - Deyvan Loxefal              - 121450148
 - Allya Nurul Islami Pasha    - 122450033
