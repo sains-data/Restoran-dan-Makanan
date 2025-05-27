@@ -92,12 +92,132 @@ Desain fisikal adalah tahap akhir dalam perancangan data warehouse, di mana desa
    * View untuk Penyederhanaan Query: View digunakan untuk menyederhanakan query SQL yang kompleks dan menyajikan data dalam bentuk agregat yang lebih mudah dipahami. Contohnya, dapat dibuat sebuah view `vw_penjualan_kategori_tahunan` yang digunakan untuk melihat tren penjualan masing-masing kategori produk dari tahun ke tahun.
 
 ## 10. Proses implementasi
+Implementasi data warehouse dilakukan dengan langkah-langkah berikut:
+1. Implementasi Gudang Data di SQL Server
+
+   Gudang data dibangun dengan pendekatan **Star Schema**, yang terdiri dari satu tabel fakta (`FaktaPenjualanPizza`) dan beberapa tabel dimensi (`DimTanggal`, `DimWaktu`, `DimPizza`, `DimUkuranPizza`).
+   **Struktur Tabel Fakta**
+   ```sql
+   CREATE TABLE FaktaPenjualanPizza (
+    id_fakta INT PRIMARY KEY,
+    id_tanggal INT,
+    id_waktu INT,
+    kunci_pizza INT,
+    id_ukuran_pizza INT,
+    kuantitas INT,
+    harga_satuan DECIMAL(10,2),
+    total_harga DECIMAL(10,2)
+   );
+   ```
+
+   **Struktur Tabel Dimensi**
+   ```sql
+   CREATE TABLE DimTanggal (
+    id_tanggal INT PRIMARY KEY,
+    tanggal_pesanan DATE,
+    tahun INT,
+    bulan INT,
+    kuartal INT,
+    hari INT,
+    nama_hari VARCHAR(10),
+    nama_bulan VARCHAR(15)
+   );
+
+   CREATE TABLE DimWaktu (
+    id_waktu INT PRIMARY KEY,
+    waktu_pesanan TIME,
+    jam INT,
+    menit INT,
+    detik INT,
+    waktu_dalam_hari VARCHAR(10)
+   );
+
+   CREATE TABLE DimPizza (
+    kunci_pizza INT PRIMARY KEY,
+    nama_pizza VARCHAR(100),
+    kategori_pizza VARCHAR(50),
+    bahan_pizza TEXT
+   );
+
+   CREATE TABLE DimUkuranPizza (
+    id_ukuran_pizza INT PRIMARY KEY,
+    ukuran_pizza VARCHAR(10)
+   );
+   ```
+   
+3. Proses ETL
+
+   **Extract**
+   Data diekstraksi dari file `pizza_sales.csv`. Validasi dilakukan dengan mengecek jumlah record pada tabel `produk`, `pesanan`, dan `detail_pesanan`
+   ```sql
+   SELECT COUNT(*) AS jumlah_produk FROM produk
+   UNION ALL
+   SELECT COUNT(*) AS jumlah_pesanan FROM pesanan
+   UNION ALL
+   SELECT COUNT(*) AS jumlah_detail FROM detail_pesanan;
+   ```
+
+   **Transform**
+   - Perbaikan `order_date` kosong atau NULL.
+   - Perhitungan ulang `total_price` = `quantity * unit_price` .
+   - Normalisasi ukuran pizza (S, M, L, XL) → huruf kapital .
+   - Hapus duplikat berdasarkan `pizza_name_id`
+
+   **Load**
+   - Memasukkan data bersih ke tabel `dim_pizza`, `dim_date`, `dim_time`
+   - Memasukkan data gabungan ke `fact_sales`
+
+5. Query Analitik
+
+   **Total Penjualan per Bulan**
+   ```sql
+   SELECT DATE_TRUNC('month', order_date) AS bulan, SUM(total_price) AS total_penjualan
+   FROM fact_sales
+   GROUP BY DATE_TRUNC('month', order_date)
+   ORDER BY bulan;
+   ```
+
+   **Rata-rata Transaksi per Order**
+   ```sql
+   SELECT AVG(total_price) AS rata_transaksi
+   FROM fact_sales;
+   ```
+
+   **Produk Terlaris Berdasarkan Kategori**
+   ```sql
+   SELECT p.pizza_category, p.pizza_name, SUM(d.quantity) AS total_terjual
+   FROM detail_pesanan d
+   JOIN produk p ON d.pizza_id = p.pizza_id
+   GROUP BY p.pizza_category, p.pizza_name
+   ORDER BY total_terjual DESC;
+   ```
+
+   **Analisis Jam Sibuk**
+   ```sql
+   SELECT EXTRACT(HOUR FROM order_time) AS jam, COUNT(*) AS total_pesanan, SUM(total_price) AS total_pendapatan
+   FROM pesanan
+   GROUP BY jam
+   ORDER BY total_pesanan DESC;
+   ```
 
 ## 11. Hasil implementasi
 
 ## 12. Evaluasi
+1. Apa yang Berhasil
+   - Implementasi Star Schema berhasil dijalankan dengan struktur yang rapi dan mendukung analisis multidimensi.
+   - Tabel dimensi seperti `DimTanggal`, `DimPizza`, `DimUkuranPizza`, dan `DimWaktu` dibangun sesuai kebutuhan analisis.
+   - View OLAP seperti `vw_penjualan_kategori_tahunan` dan `vw_penjualan_promosi` membantu pengguna non-teknis mengakses ringkasan data dengan mudah.
+
+2. Apa yang Belum
+   - Belum dilakukan pengujian performa secara menyeluruh terhadap sistem dengan skala data besar.
+   - Dashboard visualisasi dan integrasi antarmuka pengguna belum dikembangkan.
+
+3. Kendala Teknis
+   - Proses integrasi data dari berbagai sumber masih membutuhkan standarisasi lebih lanjut.
+   - Beberapa query kompleks memerlukan optimasi tambahan seiring bertambahnya volume data.
 
 ## 13. Rencana pengembangan ke depan
+Gudang data ini akan dikembangkan lebih lanjut dengan mengintegrasikan data eksternal seperti sistem CRM dan media sosial guna memperkaya analisis pelanggan. Pembuatan dashboard interaktif untuk visualisasi penjualan dan tren konsumen juga menjadi prioritas. Selain itu, analisis prediktif seperti peramalan penjualan dan rekomendasi produk akan ditambahkan menggunakan machine learning. Dari sisi teknis, sistem akan dioptimasi untuk performa dan skalabilitas melalui teknik partisi, indexing lanjutan, dan dukungan paralelisasi.
 
 ## 14. Tim Proyek 
 **Kelompok 17 RB :**
