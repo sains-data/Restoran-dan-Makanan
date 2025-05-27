@@ -201,6 +201,18 @@ Implementasi data warehouse dilakukan dengan langkah-langkah berikut:
    ```
 
 ## 11. Hasil implementasi
+1. Grafik
+   ![gambar_hasil_analisis](https://github.com/user-attachments/assets/46601eb7-8150-483e-8491-08d92d076ce1)
+   
+2. Penjualan Bulanan
+
+   Grafik ini menunjukkan tren total penjualan pizza setiap bulan sepanjang tahun. Terlihat bahwa penjualan relatif stabil dari Januari hingga Desember, tanpa lonjakan signifikan. Meskipun begitu, terdapat sedikit peningkatan penjualan pada bulan Oktober dan Desember yang bisa dikaitkan dengan momen promosi akhir tahun atau hari libur. Hal ini menunjukkan bahwa pola penjualan cenderung konsisten, namun dapat ditingkatkan dengan strategi promosi yang lebih agresif pada bulan-bulan sepi.
+   
+3. Penjualan Berdasarkan Kategori Pizza
+   Visualisasi ini menunjukkan bahwa kategori pizza Classic merupakan yang paling populer, disusul oleh Supreme, Veggie, dan Chicken. Dengan Classic sebagai kategori terlaris, restoran dapat mempertimbangkan untuk memperluas varian menu dalam kategori ini atau menyesuaikan strategi promosi untuk mendorong pembelian kategori lainnya. Performa yang seimbang antara Supreme, Veggie, dan Chicken juga menunjukkan bahwa selera pelanggan cukup beragam.
+   
+5. Analisis Jam Sibuk
+   Grafik jam sibuk memperlihatkan bahwa puncak aktivitas pembelian terjadi antara pukul 11.00 hingga 13.00 dan kembali meningkat sekitar pukul 17.00 hingga 19.00. Hal ini menunjukkan adanya dua periode sibuk utama yaitu jam makan siang dan makan malam. Informasi ini sangat berguna bagi manajemen operasional untuk mengatur jadwal kerja staf, persiapan dapur, serta strategi promosi seperti diskon terbatas pada jam sibuk untuk memaksimalkan omset.
 
 ## 12. Evaluasi
 1. Apa yang Berhasil
